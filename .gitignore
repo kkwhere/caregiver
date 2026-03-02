@@ -1,0 +1,29 @@
+# ================= 后端忽略 (Java/Maven) =================
+caregiver/target/
+caregiver/*.log
+caregiver/.idea/
+caregiver/*.iml
+caregiver/pom.xml.tag
+caregiver/pom.xml.releaseBackup
+caregiver/pom.xml.versionsBackup
+caregiver/pom.xml.next
+caregiver/release.properties
+
+# ⚠️ 重要：如果 application.yml 包含数据库密码，建议忽略它！
+# 取消下面这行的注释来忽略它
+# caregiver/src/main/resources/application.yml 
+
+# ================= 前端忽略 (UniApp/Node) =================
+caregiver_app/unpackage/
+caregiver_app/dist/
+caregiver_app/node_modules/
+caregiver_app/.hbuilderx/
+caregiver_app/.idea/
+caregiver_app/*.log
+
+# ================= 通用忽略 =================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~

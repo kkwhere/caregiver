@@ -3,7 +3,50 @@
 		{
 			"path": "pages/list/list",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "护理员列表"
+			}
+		},
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/detail/detail",
+			"style": {
+				"navigationBarTitleText": "护理员详情"
+			}
+		},
+		{
+			"path": "pages/caregiver-center/caregiver-center",
+			"style": {
+				"navigationBarTitleText": "护理员中心"
+			}
+		},
+		{
+			"path": "pages/client-center/client-center",
+			"style": {
+				"navigationBarTitleText": "个人中心"
+			}
+		},
+		{
+			"path": "pages/message/message",
+			"style": {
+				"navigationBarTitleText": "消息通知"
+			}
+		},
+		{
+			"path": "pages/review/review",
+			"style": {
+				"navigationBarTitleText": "评价护理员"
+			}
+		},
+		{
+			"path": "pages/contract-detail/contract-detail",
+			"style": {
+				"navigationBarTitleText": "签约详情"
 			}
 		},
 		{
@@ -15,9 +58,10 @@
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarTitleText": "陪伴家园",
+		"navigationBarBackgroundColor": "#667eea",
+		"backgroundColor": "#F5F5F5"
 	},
 	"uniIdRouter": {}
 }
+

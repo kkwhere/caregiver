@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # 1. 数据库服务
+  mysql:
+    image: mysql:8.0
+    container_name: caregiver-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: YourStrongPassword123! # 修改为你的强密码
+      MYSQL_DATABASE: caregiver
+      TZ: Asia/Shanghai
+    volumes:
+      - ./mysql-data:/var/lib/mysql # 数据持久化
+    networks:
+      - app-net
+    restart: always
+
+  # 2. 后端服务
+  backend:
+    build: . # 使用当前目录的 Dockerfile 构建
+    container_name: caregiver-backend
+    depends_on:
+      - mysql
+    environment:
+      # 关键：这里 URL 指向 docker 内部的服务名 'mysql'，而不是 localhost
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/caregiver?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: YourStrongPassword123! # 要和上面 MySQL 密码一致
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080" # 映射端口到宿主机
+    networks:
+      - app-net
+    restart: always
+
+networks:
+  app-net:
+    driver: bridge

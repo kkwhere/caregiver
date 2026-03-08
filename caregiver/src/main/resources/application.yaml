@@ -25,8 +25,25 @@ spring:
       # 连接测试查询 (可选，HikariCP 通常会自动处理，但加上更稳)
       connection-test-query: SELECT 1
 
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
 server:
   port: 8080
+
+# 文件上传路径配置
+file:
+  upload:
+    path: uploads
+
+# JWT配置
+jwt:
+  secret: caregiver-secret-key-for-jwt-token-generation-2026
+  expiration: 86400000  # 24小时（毫秒）
 
 mybatis-plus:
   mapper-locations: classpath:mapper/**/*.xml

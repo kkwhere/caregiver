@@ -3,7 +3,20 @@
     <!-- 顶部导航栏 -->
     <view class="top-nav">
       <text class="app-title">陪伴家园</text>
-      <button class="login-btn" size="mini" type="primary" @click="goToLogin">登录</button>
+      <!-- 已登录：显示用户头像昵称 + 退出按钮 -->
+      <view v-if="userInfo" class="user-section">
+        <view class="user-info">
+          <image 
+            :src="userInfo.avatar || '/static/logo.png'" 
+            class="user-avatar" 
+            mode="aspectFill"
+          ></image>
+          <text class="user-nickname">{{ userInfo.nickname || '用户' }}</text>
+        </view>
+        <button class="logout-btn" size="mini" type="default" @click="handleLogout">退出</button>
+      </view>
+      <!-- 未登录：显示登录按钮 -->
+      <button v-else class="login-btn" size="mini" type="primary" @click="goToLogin">登录</button>
     </view>
 
     <!-- 广告位 -->
@@ -117,6 +130,10 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { request } from '@/utils/request.js';
+
+// 用户信息
+const userInfo = ref(null);
+const userType = ref('');
 
 const caregiverList = ref([]);
 const hotCaregivers = ref([]);
@@ -270,17 +287,58 @@ const goToLogin = () => {
 };
 
 onMounted(() => {
+  // 从本地存储获取用户信息和用户类型
+  const storedUserInfo = uni.getStorageSync('userInfo');
+  const storedUserType = uni.getStorageSync('userType');
+  
+  if (storedUserInfo) {
+	userInfo.value = storedUserInfo;
+  }
+  if (storedUserType) {
+	userType.value = storedUserType;
+  }
+	
+	
+	
   fetchHotCaregivers();
   fetchAdvertisements();
   fetchList();
 });
+
+// 退出登录
+const handleLogout = () => {
+  uni.showModal({
+    title: '提示',
+    content: '确定要退出登录吗？',
+    success: (res) => {
+      if (res.confirm) {
+        // 清除本地存储的用户信息
+        uni.removeStorageSync('userInfo');
+        uni.removeStorageSync('userType');
+        
+        // 清除 token（如果有的话，根据你的实际情况）
+        // 比如：uni.removeStorageSync('token'); 或调用你封装的清除方法
+        
+        // 将 userInfo 设为 null，触发视图更新
+        userInfo.value = null;
+        
+        uni.showToast({
+          title: '已退出登录',
+          icon: 'success'
+        });
+      }
+    }
+  });
+};
 </script>
 
 <style scoped>
+/* 修改后 - 推荐写法 */
 .container {
   padding: 20rpx;
   background-color: #f5f5f5;
-  min-height: 100vh;
+  min-height: 100%; 
+  box-sizing: border-box; 
 }
 
 /* 顶部导航栏 */
@@ -505,5 +563,51 @@ onMounted(() => {
 .review-count {
   font-size: 22rpx;
   color: #999;
+}
+
+/* 用户信息（已登录状态） */
+.user-info {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8rpx 20rpx;
+  border-radius: 30rpx;
+}
+.user-avatar {
+  width: 50rpx;
+  height: 50rpx;
+  border-radius: 25rpx;
+  margin-right: 10rpx;
+  border: 2rpx solid #fff;
+}
+.user-nickname {
+  font-size: 26rpx;
+  color: #fff;
+  max-width: 150rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 已登录时的用户信息 + 退出按钮 区域 */
+.user-section {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8rpx 20rpx;
+  border-radius: 30rpx;
+  gap: 20rpx; /* 用户信息与退出按钮之间的间距 */
+}
+
+/* 退出登录按钮 */
+.logout-btn {
+  background: rgba(255, 255, 255, 0.3);
+  color: #fff;
+  border: 1rpx solid rgba(255, 255, 255, 0.5);
+  font-size: 24rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
 }
 </style>

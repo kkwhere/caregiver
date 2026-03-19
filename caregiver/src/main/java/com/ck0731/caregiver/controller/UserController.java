@@ -5,9 +5,11 @@ import com.ck0731.caregiver.entity.User;
 import com.ck0731.caregiver.service.SmsService;
 import com.ck0731.caregiver.service.UserService;
 import com.ck0731.caregiver.util.JwtUtil;
+import com.ck0731.caregiver.util.WeChatUtil; // 引入新工具类
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +26,9 @@ public class UserController {
     @Autowired
     private SmsService smsService;
 
+    @Autowired
+    private WeChatUtil weChatUtil; // 注入微信工具类
+
     // 根据openid获取用户
     @GetMapping("/openid/{openid}")
     public User getByOpenid(@PathVariable String openid) {
@@ -32,39 +37,63 @@ public class UserController {
         return userService.getOne(wrapper);
     }
 
-    // 微信登录（如果用户不存在则创建，返回JWT token）
+    // ✅ 修改后的微信登录接口
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> params) {
-        String openid = params.get("openid");
+        String code = params.get("code"); // 前端传的是 code
         String nickname = params.get("nickname");
         String avatar = params.get("avatar");
-        String userType = params.get("userType"); // client 或 caregiver
+        String userType = params.get("userType");
 
         Map<String, Object> result = new HashMap<>();
 
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("openid", openid);
-        User user = userService.getOne(wrapper);
-
-        if (user == null) {
-            // 新用户，创建账号
-            user = new User();
-            user.setOpenid(openid);
-            user.setNickname(nickname);
-            user.setAvatar(avatar);
-            user.setUserType(userType != null ? userType : "client");
-            userService.save(user);
-            result.put("isNew", true);
-        } else {
-            result.put("isNew", false);
+        if (code == null || code.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "缺少登录凭证 code");
+            return result;
         }
 
-        // 生成JWT token
-        String token = jwtUtil.generateToken(user.getId(), user.getUserType());
+        try {
+            // 1. 后端用 code 去微信服务器换取 openid (核心步骤)
+            String openid = weChatUtil.getOpenId(code);
 
-        result.put("user", user);
-        result.put("token", token);
-        return result;
+            // 2. 根据 openid 查询用户
+            QueryWrapper<User> wrapper = new QueryWrapper<>();
+            wrapper.eq("openid", openid);
+            User user = userService.getOne(wrapper);
+
+            if (user == null) {
+                // 新用户，创建账号
+                user = new User();
+                user.setOpenid(openid); // 存入真实的 openid
+                user.setNickname(nickname);
+                user.setAvatar(avatar);
+                user.setUserType(userType != null ? userType : "client");
+                userService.save(user);
+                result.put("isNew", true);
+            } else {
+                // 老用户，可选：更新昵称和头像（因为用户可能修改过微信资料）
+                if (nickname != null) user.setNickname(nickname);
+                if (avatar != null) user.setAvatar(avatar);
+                if (userType != null) user.setUserType(userType);
+                userService.updateById(user);
+                result.put("isNew", false);
+            }
+
+            // 3. 生成 JWT token
+            String token = jwtUtil.generateToken(user.getId(), user.getUserType());
+
+            result.put("success", true);
+            result.put("user", user);
+            result.put("token", token);
+            return result;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("success", false);
+            result.put("message", "微信登录失败：" + e.getMessage());
+            return result;
+        }
     }
 
     /**
@@ -138,6 +167,39 @@ public class UserController {
         result.put("success", true);
         result.put("user", user);
         result.put("token", token);
+        return result;
+    }
+
+    /**
+     * 登录后设置/更新昵称（必须登录，通过 JWT 识别当前用户）
+     */
+    @PatchMapping("/nickname")
+    public Map<String, Object> updateNickname(
+            @RequestBody Map<String, String> params,
+            HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<>();
+        String nickname = params != null ? params.get("nickname") : null;
+        if (nickname == null || (nickname = nickname.trim()).isEmpty()) {
+            result.put("success", false);
+            result.put("message", "昵称不能为空");
+            return result;
+        }
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            result.put("success", false);
+            result.put("message", "未登录或登录已过期");
+            return result;
+        }
+        User user = userService.getById(userId);
+        if (user == null) {
+            result.put("success", false);
+            result.put("message", "用户不存在");
+            return result;
+        }
+        user.setNickname(nickname);
+        userService.updateById(user);
+        result.put("success", true);
+        result.put("user", user);
         return result;
     }
 

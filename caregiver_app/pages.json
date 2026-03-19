@@ -1,5 +1,5 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	"pages": [
 		{
 			"path": "pages/list/list",
 			"style": {
@@ -50,9 +50,33 @@
 			}
 		},
 		{
+			"path": "pages/contract-list/contract-list",
+			"style": {
+				"navigationBarTitleText": "我的签约"
+			}
+		},
+		{
 			"path": "pages/index/index",
 			"style": {
 				"navigationBarTitleText": "uni-app"
+			}
+		},
+		{
+			"path": "pages/protocol/user/user",
+			"style": {
+				"navigationBarTitleText": "用户协议"
+			}
+		},
+		{
+			"path": "pages/protocol/privacy/privacy",
+			"style": {
+				"navigationBarTitleText": "隐私政策"
+			}
+		},
+		{
+			"path": "pages/set-nickname/set-nickname",
+			"style": {
+				"navigationBarTitleText": "设置昵称"
 			}
 		}
 	],

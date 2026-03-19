@@ -79,7 +79,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { request } from '@/utils/request.js';
+import { request, uploadImages } from '@/utils/request.js';
 
 const caregiverInfo = ref(null);
 const contractId = ref(null);
@@ -138,9 +138,16 @@ const handleSubmit = async () => {
   submitting.value = true;
 
   try {
-    // TODO: 如果有图片，需要先上传图片到服务器，获取图片URL
-    // 这里暂时使用本地路径
-    const imagesJson = images.value.length > 0 ? JSON.stringify(images.value) : null;
+    // 如果有图片，先上传图片到服务器
+    let imageUrls = [];
+    if (images.value.length > 0) {
+      uni.showLoading({ title: '上传图片中...' });
+      imageUrls = await uploadImages(images.value);
+      uni.hideLoading();
+    }
+
+    // 提交评价
+    const imagesJson = imageUrls.length > 0 ? JSON.stringify(imageUrls) : null;
 
     await request({
       url: '/review/create',

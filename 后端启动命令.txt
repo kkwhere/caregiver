@@ -1,0 +1,12 @@
+cd /opt/caregiver
+
+sudo pkill -f app.jar
+
+nohup java -jar app.jar > log.out 2>&1 &
+
+
+ps -ef | grep app.jar
+
+sudo kill -9 463328
+
+

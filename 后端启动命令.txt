@@ -10,5 +10,3 @@ ps -ef | grep app.jar
 sudo kill -9 463328
 
 
-
-
